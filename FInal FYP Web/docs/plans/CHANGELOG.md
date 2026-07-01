@@ -42,6 +42,20 @@ This suite was commissioned to become the permanent engineering constitution of 
 
 ---
 
+## 2026-07-01 — Closed Learning Loop + Explainability (Intelligence Roadmap Phases 1 & 2)
+
+| Doc | Version | Change |
+|---|---|---|
+| 14_AI_DEVELOPMENT_GUIDELINES | 2.2.0 | Documented the Phase 1 learning loop (learned description→accounts resolution ahead of fuzzy; conservative-only confidence recalibration) and Phase 2 explainability (grounded, faithful-by-construction explanations; one-click correct/reverse that feeds learning). |
+
+**Phase 1 — Closed Learning Loop.** `utils/learningKey.helper.js` (normalize a description to a stable per-tenant key), `services/learnedResolution.service.js` (learn/recall description→accounts over the existing `EntityMemory` store, kind `nl_description_accounts`, never-throwing), `utils/aiCalibration.helper.js` + `services/aiCalibration.service.js` (measured acceptance/reversal rates from the Phase-0 ledger → a **conservative-only** effective auto-post threshold, never below the 0.98 floor), plus a new `aiDecision.repository.outcomeBreakdown`. Wired into `transaction.controller.js`: recall beats fuzzy in `processNaturalLanguage`; the final confirmed/auto-posted mapping is learned. Read surface `GET /api/v1/ai-decisions/stats`.
+
+**Phase 2 — Explainability Everywhere.** `utils/aiExplain.helper.js` (deterministic, faithful-by-construction plain-language explanation) + `services/aiExplain.service.js`; endpoints `GET /api/v1/ai-decisions/:id/explain`, `POST /api/v1/ai-decisions/:id/outcome` (accept/correct/reverse — a correction feeds Phase 1 learning), all `ai:review`-gated.
+
+Guardrails held: a learned mapping never overrides an explicit user choice; recalibration only tightens, never loosens; explanations reference only stored values; the ledger is untouched (this work only observes/advises). TDD throughout (44 new backend tests). Full suite 240 suites/1723 tests green; `npm run eval` PASS (10/10); production ledger drift unchanged at 0 across all 4 businesses. See `docs/superpowers/specs/2026-07-01-vousfin-intelligence-roadmap-design.md` (Phases 1 & 2 marked shipped).
+
+---
+
 ## 2026-07-01 — AI Decision Ledger + Evaluation Harness (Intelligence Roadmap Phase 0)
 
 | Doc | Version | Change |

@@ -87,8 +87,9 @@ Each phase: **Goal · Build · Reuses (what already exists) · Deliverables · S
 - **Success metric.** 100% of AI actions produce an `AIDecision`; eval harness runs in CI and gates changes.
 - **Guardrails.** Ledger is read-only after write; no sensitive raw data stored beyond a summary; tenant-scoped.
 
-### Phase 1 — The Closed Learning Loop *(self-improving brain)*
+### Phase 1 — The Closed Learning Loop *(self-improving brain)* — ✅ SHIPPED 2026-07-01
 
+- **Status.** Learned description→accounts resolution (`learningKey.helper` + `learnedResolution.service` over the existing `EntityMemory` store) recalled ahead of the fuzzy matcher and learned on confirm/auto-post; measured confidence recalibration (`aiCalibration.helper`/`.service`) derives a **conservative-only** effective auto-post threshold from real outcomes (never below the 0.98 floor). The per-business knowledge-graph deepening and the "VousFin learned X" frontend UX remain for a follow-on. TDD; full suite green; drift 0.
 - **Goal.** The more a business uses VousFin, the smarter it gets **for that business**.
 - **Build.**
   - Corrections captured in Phase 0 become labeled signals. A per-tenant **learned-preference store**: counterparty→account defaults ("AWS"→Software Subscriptions), category patterns, recurring-transaction detection, payment-terms defaults, tax treatment defaults.
@@ -100,8 +101,9 @@ Each phase: **Goal · Build · Reuses (what already exists) · Deliverables · S
 - **Success metric.** User-correction rate trends down over time; auto-post % trends up at constant reversal rate.
 - **Guardrails.** Learning is per-tenant (P7); a learned mapping never overrides an explicit user choice; every learned rule is inspectable and deletable.
 
-### Phase 2 — Explainability Everywhere *(trust to dial up autonomy)*
+### Phase 2 — Explainability Everywhere *(trust to dial up autonomy)* — ✅ SHIPPED 2026-07-01 (backend)
 
+- **Status.** `aiExplain.helper.buildExplanation` renders any Phase-0 decision as grounded plain language — deterministic templating over stored fields only, so it is faithful by construction (no LLM, no hallucination). Endpoints: `GET /ai-decisions/:id/explain` and `POST /ai-decisions/:id/outcome` (accept/correct/reverse; a correction feeds the Phase 1 learning loop). The frontend "review AI decision" component is a follow-on. TDD; full suite green; drift 0.
 - **Goal.** Every AI number, match, verdict, and auto-post carries a grounded plain-language "why."
 - **Build.**
   - A `explain(decisionId)` surface that renders the Phase-0 lineage as plain language: *"This bill auto-matched PO-123 because quantity and unit price agree within 5% and the vendor matches; duplicate check passed."*
