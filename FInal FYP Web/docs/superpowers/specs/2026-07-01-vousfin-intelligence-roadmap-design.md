@@ -74,8 +74,9 @@ Two new cross-cutting substrates (Phase 0) make everything else possible: the **
 
 Each phase: **Goal · Build · Reuses (what already exists) · Deliverables · Success metric · Guardrails.** Sequenced so each unlocks the next.
 
-### Phase 0 — AI Decision Ledger + Evaluation Harness *(foundation)*
+### Phase 0 — AI Decision Ledger + Evaluation Harness *(foundation)* — ✅ SHIPPED 2026-07-01
 
+- **Status.** Built per `docs/superpowers/plans/2026-07-01-phase0-ai-decision-ledger.md` (10 TDD tasks, 36 new tests). Reference instrumentation lands on the NL-parse + auto-post path (`transaction.controller.js`); the Excel/match/reconcile/anomaly/forecast paths follow the same two-call pattern (`record()` + `recordOutcome()`) in their own future phases/plans — not built here. `npm run eval` scores the deterministic NL type-mapping layer against a golden set (10/10, baseline-gated); extend with more capabilities over time. Full backend suite 233 suites/1679 tests green; production ledger drift unchanged at 0 (this phase never posts).
 - **Goal.** Give every AI action an auditable lineage and give every AI change a measured quality gate.
 - **Build.**
   - `AIDecision` append-only model: `{businessId, kind (parse|classify|match|reconcile|autopost|anomaly|forecast|recommend), inputsSummary, candidates[], decision, confidence, model, promptVersion, outcome (pending|accepted|corrected|reversed), correctedTo, linkedEntityId, createdAt}`. Tenant-scoped, immutable, retention-governed.

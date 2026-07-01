@@ -83,6 +83,7 @@ The product AI (Gemini NL parse, Groq assistant) assists; it never invents accou
 - **Independent gates.** The amount-threshold approval gate applies on top of confidence — a confident large amount still parks for approval (EC-AI-06).
 - **Auto-post is opt-in** (`Business.aiSettings.autoPostEnabled`, default false), tagged `transactionSource=ai_auto_posted`, fully reversible, and surfaced for passive review.
 - **Excel import** enforces per-row confidence: High imports, Medium flags, Low is held back (EC-IMPORT-01..03).
+- **AI Decision Ledger (Intelligence Roadmap Phase 0, shipped 2026-07-01).** Every AI action must call `aiDecision.service.record(businessId, kind, payload)` at decision time and `recordOutcome(decisionId, businessId, outcome)` when the user accepts/corrects/reverses it. The `AIDecision` collection (`models/AIDecision.model.js`) is append-only (immutability hooks block bulk update/delete) and the service never throws into the caller — a logging failure can never break or slow an AI/accounting path. The NL-parse + auto-post path (`transaction.controller.js`) is the reference instrumentation; other AI paths (Excel classify, bill match, bank reconcile, anomaly, forecast) follow the same two-call pattern in later phases. Read surface: `GET /api/v1/ai-decisions` (gated by `ai:review`).
 
 ## 7. RAG / retrieval
 

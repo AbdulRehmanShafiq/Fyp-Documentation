@@ -35,10 +35,21 @@ This suite was commissioned to become the permanent engineering constitution of 
 
 - Wire drift + integrity gates into CI (Docs 06, 10, 13).
 - Build the dataset generator + verifier (Doc 05).
-- Aggregated single-transaction bulk poster for fast large imports (Docs 04, 11).
-- Rotate exposed Atlas DB password; role-gate the 3-way-match override (Doc 12).
-- Control-vs-subledger reconcile checks VE-5/VE-6 (Doc 06).
-- Scheduled batch fixed-asset depreciation (Doc 03/08).
+- Aggregated single-transaction bulk poster for fast large imports (Docs 04, 11) — explicitly deferred by the user pending a future database/deployment infrastructure upgrade.
+- ~~Rotate exposed Atlas DB password~~ — done (user rotated it directly, 2026-07-01). ~~Role-gate the 3-way-match override~~ — done (`match:override` permission, backend `98ec65a`).
+- ~~Control-vs-subledger reconcile checks VE-5/VE-6~~ — done (`ledgerIntegrity.computeArApSubledgerDrift`, backend `51315df`).
+- ~~Scheduled batch fixed-asset depreciation~~ — done (`fixedAssetDepreciation.job`, daily cron, backend `d02af22`).
+
+---
+
+## 2026-07-01 — AI Decision Ledger + Evaluation Harness (Intelligence Roadmap Phase 0)
+
+| Doc | Version | Change |
+|---|---|---|
+| 06_VALIDATION_ENGINE | 1.1.0 | Added `npm run eval` as the AI model/prompt regression gate (§4), generalizing the forecasting champion/challenger discipline to every AI capability. |
+| 14_AI_DEVELOPMENT_GUIDELINES | 2.1.0 | Documented the mandatory `aiDecision.service.record()` / `recordOutcome()` instrumentation contract for every AI decision point (§6). |
+
+Shipped: `models/AIDecision.model.js` (append-only lineage collection), `utils/aiDecision.helper.js` (pure record-builder + outcome-transition guard), `repositories/aiDecision.repository.js`, `services/aiDecision.service.js` (never-throwing), `GET /api/v1/ai-decisions` (`ai:review`-gated read surface), reference instrumentation on the NL-parse + auto-post path (`transaction.controller.js`), and `scripts/eval/runEval.js` (`npm run eval`) scoring the NL type-mapping layer against a golden set with a baseline-regression gate. TDD throughout (36 new backend tests); full suite 233 suites/1679 tests green; `npm run eval` PASS (10/10); production ledger drift unchanged at 0 across all 4 businesses (this phase only observes AI decisions — it never posts). Backend HEAD to follow this entry's commit. See `docs/superpowers/specs/2026-07-01-vousfin-intelligence-roadmap-design.md` (roadmap) and `docs/superpowers/plans/2026-07-01-phase0-ai-decision-ledger.md` (implementation plan).
 
 ---
 

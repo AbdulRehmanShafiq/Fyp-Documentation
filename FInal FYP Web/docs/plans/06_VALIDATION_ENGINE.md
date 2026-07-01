@@ -59,6 +59,7 @@ flowchart TD
 - **Tolerance.** Monetary equality to 0.01 (2 dp); zero tolerance for drift and balance.
 - **Outputs.** A structured report per business `{check, source, projected, delta, pass}`; failures raise `FinancialAlert` and (in CI) fail the integrity gate.
 - **Existing entry point.** `scripts/run-integrity-gate.js` (`npm run test:integrity`) is the seed of this harness; extend it to cover VE-3…VE-15.
+- **AI model/prompt gate.** `npm run eval` (`scripts/eval/runEval.js`) scores AI capabilities against golden datasets (`scripts/eval/golden/`) and fails on any regression vs `scripts/eval/baseline.json` (Intelligence Roadmap Phase 0, shipped 2026-07-01). No AI model or prompt change ships without this gate passing — the same champion/challenger discipline as forecasting, generalized to every AI capability.
 
 ## 5. Write-time vs post-hoc
 
