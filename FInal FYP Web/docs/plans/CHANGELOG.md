@@ -42,6 +42,22 @@ This suite was commissioned to become the permanent engineering constitution of 
 
 ---
 
+## 2026-07-02 — Import account resolution overhaul + Phases 5 & 6 cores
+
+**Bulk-import "account not found" fix (reported: Owner Equity rows rejected).** Root cause: the seeded chart has no account named "Owner Equity" (equity defaults are 3110 Capital / Investment, 3120 Distributions / Drawings, …) and the name matcher had no path from vernacular names to standard accounts. Shipped the enterprise resolution chain, fully deterministic (no LLM guessing):
+1. `utils/importAccountResolver.js` — **code matching** ("3110", "3110 - Capital"), a curated **bookkeeping-synonym table** (Owner Equity/Owner's Capital→3110, Debtors→1110, Creditors→2110, Sales Revenue→4110, ~120 entries), **keyword+transaction-type account-shape inference**, and **standard code allocation** (next free code in the type's 1xxx–6xxx range).
+2. `services/importAccountResolution.service.js` — resolve-or-create: when a row names an account that truly doesn't exist, it is **created automatically** with the inferred type/subtype/normal balance, the next standard code, `autoCreated: true` (new ChartOfAccount field), an audit-log entry, and batch-level dedupe + duplicate-key race recovery. Junk names (too short/numeric-only) never become accounts.
+3. Wired into `uploadExcelPreview` (unknown accounts are "will be created" rows — flagged Medium, not errors) and `confirmExcelImport` (creates, counts, reports `createdAccounts`).
+4. **CoA visibility:** the Excel template now includes a live "Chart of Accounts" sheet (code/name/type/group) and the frontend Chart of Accounts page now shows the reference **Code** column + an "added automatically during import" badge.
+
+**Phase 5 core (multi-modal ingestion lineage).** The bookkeeper document pipeline (`ingest` — photo/text → Gemini read → policy-gated proposal) now records a `classify` decision in the AI Decision Ledger (inputs, candidates, confidence, linked SourceDocument) and marks it `accepted` when policy auto-executes the post.
+
+**Phase 6 core (unified brain).** `services/brainContext.service.js` + `GET /autonomy/brain-context` — one tenant-scoped, fault-isolated read surface aggregating the learned-preference store, measured calibration, STP scorecard, close readiness, and health, so every agent reasons from the same picture. Derivation-only; stores nothing.
+
+Verification: 251 suites/1786 tests green (+31 TDD tests), `npm run eval` PASS, production ledger drift 0 across all 4 businesses. Frontend: 75 tests green, build clean.
+
+---
+
 ## 2026-07-02 — Continuous Close & STP + Proactive AI CFO (Intelligence Roadmap Phases 3 & 4)
 
 | Doc | Version | Change |

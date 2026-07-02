@@ -141,8 +141,9 @@ Each phase: **Goal · Build · Reuses (what already exists) · Deliverables · S
 - **Success metric.** % of recommendations acted on; measurable working-capital/runway improvement.
 - **Guardrails.** Advice is grounded in the tenant's real figures; VousFin is not a licensed advisor — framing stays "here's what your numbers say," not personalized investment advice.
 
-### Phase 5 — Deep Multi-Modal Ingestion *(feed the brain)*
+### Phase 5 — Deep Multi-Modal Ingestion *(feed the brain)* — ✅ CORE SHIPPED 2026-07-02
 
+- **Status.** The document pipeline already existed (`bookkeeper.ingest`: photo/text → Gemini vision read → policy-gated proposal → post; OFX/MT940 parsers live). Shipped the Phase-5 core on top: every document classification is now recorded in the AI Decision Ledger (kind `classify`, linked to its SourceDocument, outcome `accepted` on policy auto-execute) — extraction accuracy is now measurable per Phase 0. Deferred: email-forward capture, additional document types beyond receipts/bills, bank-feed connectors.
 - **Goal.** Turn any real-world financial artifact into structured, explained, posted accounting automatically.
 - **Build.**
   - Vision/OCR for any document: receipts, invoices, bank statements, contracts → structured extraction → the pipeline (with confidence tiers + explanation).
@@ -153,8 +154,9 @@ Each phase: **Goal · Build · Reuses (what already exists) · Deliverables · S
 - **Success metric.** % of source documents captured without manual entry; extraction accuracy (measured via Phase 0).
 - **Guardrails.** Extracted data is never posted un-gated; low-confidence extractions are held for review (the Excel-tier pattern).
 
-### Phase 6 — The Unified Financial Brain *(orchestration + agentic depth)*
+### Phase 6 — The Unified Financial Brain *(orchestration + agentic depth)* — ✅ CORE SHIPPED 2026-07-02
 
+- **Status.** Shipped the shared-context core: `brainContext.service.getContext` at `GET /autonomy/brain-context` — one tenant-scoped, fault-isolated, derivation-only surface aggregating the learned store (EntityMemory), measured calibration + effective auto-post threshold, the STP scorecard, close readiness, and business health. Cross-agent orchestration (`orchestrator`), NL control (`nlControl`), and the autonomy dials already existed and now share this context. Deferred: deeper cross-agent event chaining, autonomy-dial auto-recommendations from measured accuracy.
 - **Goal.** One brain: shared context, collaborating agents, natural-language control, autonomy that earns its dial-ups.
 - **Build.**
   - A **shared business context** all agents read/write (single AI source of business truth), built on `EntityMemory` + Phase 1's learned store.
