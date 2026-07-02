@@ -42,6 +42,20 @@ This suite was commissioned to become the permanent engineering constitution of 
 
 ---
 
+## 2026-07-02 — Continuous Close & STP + Proactive AI CFO (Intelligence Roadmap Phases 3 & 4)
+
+| Doc | Version | Change |
+|---|---|---|
+| 14_AI_DEVELOPMENT_GUIDELINES | 2.3.0 | Documented the STP scorecard, close-readiness score, and the advisor feed (ledger-recorded recommendations). |
+
+**Phase 3 — Continuous Close & STP.** `utils/stpMetrics.helper.js` + `services/stpScorecard.service.js` — the straight-through-processing scorecard: windowed per-tenant automation rates for posting (`ai_auto_posted` vs user-originated JEs), matching (clean 3-way matches), reconciliation (auto-matched bank lines), and categorization (accepted AI decisions); capabilities with no activity report null, never a false 0%. `utils/closeReadiness.helper.js` + `services/closeReadiness.service.js` — a weighted close-readiness checklist over the existing engines (due recognitions, due depreciation, pending approvals, unmatched bank lines, ledger drift, AI review queue); a failing data source reads "not verified" (blocks), never a false pass, and `ready` requires every check green regardless of score. Endpoints: `GET /autonomy/stp-scorecard`, `GET /autonomy/close/readiness`. Continuous reconciliation jobs and the orchestrated close itself already existed (`bankReconciliation.job`, `closeAgent`) and were reused, not rebuilt.
+
+**Phase 4 — Proactive AI CFO.** `utils/advisor.helper.js` (pure, grounded-by-construction recommendation builder — every "why" cites only numbers passed in) + `services/advisor.service.js` (fault-isolated signal gathering from the 13-week cash forecast, AR aging, business health, and the STP scorecard) + `GET /advisor/recommendations`. Ranked critical→info: projected cash dip, chase 60+-day receivables, weak health score, low automation. Every non-empty advisory run is recorded in the AI Decision Ledger (kind `recommend`) — advice has the same lineage as every other AI action. Framing stays "here's what your numbers say" (not investment advice). Deferred to follow-ons: conversational what-if, benchmark-driven advice, frontend surfaces.
+
+Verification: 248 suites/1755 tests green (+32 TDD tests), `npm run eval` PASS, production ledger drift 0 across all 4 businesses (both features are read-only derivations — they can never disagree with the ledger).
+
+---
+
 ## 2026-07-01 — Closed Learning Loop + Explainability (Intelligence Roadmap Phases 1 & 2)
 
 | Doc | Version | Change |

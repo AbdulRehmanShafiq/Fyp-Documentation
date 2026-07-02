@@ -114,8 +114,9 @@ Each phase: **Goal · Build · Reuses (what already exists) · Deliverables · S
 - **Success metric.** % of AI actions with a complete, faithful explanation → 100%.
 - **Guardrails.** Explanations are grounded in the actual decision inputs; plain language per the product-copy rule (no jargon as primary text).
 
-### Phase 3 — Continuous Close & Straight-Through Processing
+### Phase 3 — Continuous Close & Straight-Through Processing — ✅ SHIPPED 2026-07-02 (backend)
 
+- **Status.** STP scorecard (`stpScorecard.service` — windowed auto-post/match/reconcile/categorize rates, null for no-signal capabilities) + weighted close-readiness score (`closeReadiness.service` — recognitions/depreciation/approvals/bank/ledger/AI-review checks; unverified ≠ pass) at `GET /autonomy/stp-scorecard` and `GET /autonomy/close/readiness`. Continuous-reconcile jobs and the orchestrated one-click close already existed (`bankReconciliation.job`, `closeAgent`) and are reused. Frontend surfaces + trending history are follow-ons. TDD; drift 0.
 - **Goal.** Always-current books; measured, ever-increasing automation depth.
 - **Build.**
   - **STP scorecard**: auto-post %, auto-match %, auto-reconcile %, auto-categorize % — the north-star metrics, per tenant, trending.
@@ -126,8 +127,9 @@ Each phase: **Goal · Build · Reuses (what already exists) · Deliverables · S
 - **Success metric.** STP rates trend up; close-cycle time down; books provably current (drift 0 continuously).
 - **Guardrails.** Close respects period locks; every auto-adjusting entry is explained + reversible.
 
-### Phase 4 — Proactive AI CFO / Advisory Brain
+### Phase 4 — Proactive AI CFO / Advisory Brain — ✅ SHIPPED 2026-07-02 (backend core)
 
+- **Status.** `advisor.service` + pure `advisor.helper` at `GET /advisor/recommendations`: ranked, grounded-by-construction, executable recommendations from live signals (13-week cash dip → critical; 60+-day receivables → high; weak health → medium; low STP → info), each advisory run recorded in the Decision Ledger (kind `recommend`). Deferred: conversational what-if, benchmark-driven advice, frontend advisor feed. TDD; drift 0.
 - **Goal.** Always-on, decision-ready guidance — the "what should I do next" layer.
 - **Build.**
   - Continuous monitoring → ranked, explainable, **executable** recommendations: cash runway, working-capital levers (DSO/DPO), margin erosion, liquidity/covenant alerts, spend anomalies.
