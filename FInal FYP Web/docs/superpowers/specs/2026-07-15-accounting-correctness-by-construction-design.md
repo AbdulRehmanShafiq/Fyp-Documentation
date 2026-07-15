@@ -265,16 +265,77 @@ assuming it could read outside its own transaction:
 
 Full suite: 2110 passing (was 2069). Drift 0.
 
-### Still open
+### Implementation COMPLETE (2026-07-16)
 
-- **AR/AP fail-open** (`postArJournal`, bill AP). Deferred: a concurrent session
-  held `invoice.service.js` / `bill.service.js` for the root cause below.
-- **Phase 3** — idempotency mandatory at the poster. Cannot enforce until every
-  caller is keyed, and invoice/bill are among the 14 keyless ones.
-- **Phase 4** — `getAccountTurnover` top-level pairs; P3 debt.
-- **Phase 5** — continuous assurance.
-- 5 GRN suites fail locally on `buffering timed out` (they reach for a real
-  mongod that isn't there). Pre-existing; the live harness is the fix.
+Every phase in this spec has shipped. Backend: **301 suites / 2139 tests, zero
+failures**; drift 0; all four live businesses report "Your books add up."
+
+| Phase | Status |
+|---|---|
+| 0 — real-DB proof harness + Golden Invariants | ✅ shipped (`84a09a2`) |
+| 1 — self-healing account resolver | ✅ shipped (`8f05fdf`) |
+| 2 — recognition fails closed (close, FX, **AR/AP**) | ✅ shipped (`8f05fdf`, `4629c82`, `77a61a3`) |
+| 3 — idempotency mandatory at the poster | ✅ shipped (`d111ec8`) |
+| 4 — atomicity + derived-not-stored sweep | ✅ shipped (`75810ec` + this pass) |
+| 5 — continuous assurance | ✅ shipped (`9bbbdd4`) + `GET /reports/books-assurance` |
+
+**AR/AP fail-open — closed.** `postArJournal` / `postApLiabilityJournal` now
+resolve by code through the resolver, which seeds a missing default; the
+`return null` skips are gone. Two things the resolver exposed on the way:
+
+- Bill's expense fallback asked for `5100 → 5000 → 6100` and **none of those
+  exist in DEFAULT_ACCOUNTS** — for any standard business the chain always
+  resolved to null and skipped the payable. Hidden only because bill lines
+  normally carry an explicit account. Now falls back to Miscellaneous Expenses
+  (6390): the honest answer to "we were not told which expense", visible for the
+  owner to recategorise. Booking the payable to Miscellaneous beats not booking it.
+- Revenue pointed at the AR control account is NOT healable (the entry would
+  cancel itself out), so it refuses in plain language naming the fix.
+
+**A production break the live tier caught (`77a61a3`).** Routing every invoice
+through `postArJournal` for the first time exposed that **seven** system posting
+sites omitted `inputMethod`, which the schema REQUIRES — every one would have
+thrown. It hid because the invoice-first flow was unreachable (transaction-first
+invoices short-circuit on `linkedJournalEntryId`; below-threshold ones
+early-returned) and because the unit tests mock the poster, so no schema ever ran.
+Defaulted in `postCompoundJournal` rather than at seven call sites — same
+reasoning as the balance rule.
+
+**Phase 3's shape, corrected by contact with the code.** "Mandatory" cannot mean
+"every posting has a key": builds, stock adjustments, revaluations, recalcs and
+period adjusting entries are repeatable ON PURPOSE, and an entity-derived key
+would block the second legitimate one. So the poster demands a *decision*:
+
+    a string  → happens once; the DB enforces it
+    null      → deliberately repeatable; I decided
+    undefined → you forgot. Throw.
+
+Retry-safety for the repeatable ones belongs at the API boundary as a
+caller-supplied request key — the one piece deliberately left for later.
+
+**Phase 4 was already largely closed** by the concurrent session: `getAccountTurnover`
+deleted outright (an unused helper modelling the wrong pattern is a trap, and
+deleting beats fixing), party balances tenant-scoped, dead `bulkCreate` removed.
+Locked-period override resolved as recommended: never overridable on LOCKED,
+`forcePost` on CLOSED.
+
+**The 5 GRN failures were never environmental** — twice assumed so, wrongly.
+Standard costing made GRN receipt read `InventoryItem`; neither suite mocked it,
+so they hit the real model with no database and hung until Mongoose's 10s
+buffering timeout. That timeout is a race, which is why the count wandered
+between 5/6/8 and read as flakiness. `grnBillLifecycle`: 34s → 1.4s.
+
+### ⚠️ Open — needs a decision, not code
+
+**2 unposted invoices in live production, Rs 88,500.** INV-202607-24893 (43,500,
+`sent`) and INV-202607-24895 (45,000, `approved`) — both below the 50,000
+threshold, the bug's exact fingerprint. The fix stops new ones; these two are
+still revenue and AR absent from the books. Repair means re-triggering
+recognition per document or a backfill. Production data is not mutated without
+asking. Bills: 0 affected.
+
+Also deliberately deferred: an HTTP `Idempotency-Key` boundary for the repeatable
+postings, and a frontend surface for `GET /reports/books-assurance`.
 
 ### Root cause of the unposted invoice — found (concurrent session)
 
